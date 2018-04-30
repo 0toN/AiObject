@@ -13,9 +13,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package com.deepblue.aiobject;
+package com.deepblue.aiobject.activity;
 
 import android.app.Activity;
+
 import java.io.IOException;
 
 /**
@@ -34,7 +35,7 @@ public class ImageClassifierQuantizedMobileNet extends ImageClassifier {
    *
    * @param activity
    */
-  ImageClassifierQuantizedMobileNet(Activity activity) throws IOException {
+  protected ImageClassifierQuantizedMobileNet(Activity activity) throws IOException {
     super(activity);
     labelProbArray = new byte[1][getNumLabels()];
   }
