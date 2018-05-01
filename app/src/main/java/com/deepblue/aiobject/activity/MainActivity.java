@@ -23,29 +23,57 @@ import android.widget.TextView;
 
 import com.deepblue.aiobject.R;
 import com.deepblue.aiobject.util.BitmapUtil;
+import com.deepblue.aiobject.util.ToastUtil;
+import com.deepblue.aiobject.util.TransparentStatusBarUtil;
 
 import java.io.File;
 import java.io.IOException;
 
+import butterknife.BindView;
+import butterknife.ButterKnife;
+
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
-
     private static final int CODE_TAKE_PHOTO = 1;
     private static final int CODE_SELECT_PHOTO = 2;
     private static final int CODE_PERMISSION_CAMERA = 3;
     private static final int CODE_PERMISSION_WRITE = 4;
-
+    @BindView(R.id.imageView)
+    ImageView mImgPhoto;
+    @BindView(R.id.tvResult)
+    TextView mTxtResult;
+    @BindView(R.id.tv_tab_name)
+    TextView mTxtTabName;
     private String imgPathName;
     private ImageClassifier classifier;
 
-    private ImageView mImgPhoto;
-    private TextView mTxtResult;
+    private long mExitTime;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            TransparentStatusBarUtil.setTransparent(this);
+        }
         setContentView(R.layout.activity_main);
-        init();
+        ButterKnife.bind(this);
+        initViews();
+    }
+
+    @Override
+    public void onDestroy() {
+        classifier.close();
+        super.onDestroy();
+    }
+
+    @Override
+    public void onBackPressed() {
+        if ((System.currentTimeMillis() - mExitTime) > 2000) {
+            ToastUtil.showShort(this, "再按一次退出应用");
+            mExitTime = System.currentTimeMillis();
+        } else {
+            super.onBackPressed();
+        }
     }
 
     @Override
@@ -93,11 +121,17 @@ public class MainActivity extends Activity {
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
+        try {
+            classifier = new ImageClassifierQuantizedMobileNet(this);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to initialize an image classifier.", e);
+        }
         bitmap = BitmapUtil.getBitmapByPath(imgPathName, classifier.getImageSizeX(), classifier.getImageSizeY());
         if (bitmap != null) {
             mImgPhoto.setImageBitmap(bitmap);
-            String result = classifyBitmapResult(bitmap);
+            String result = classifier.classifyFrame(bitmap);
             mTxtResult.setText(result);
+            classifier.close();
         }
     }
 
@@ -107,23 +141,8 @@ public class MainActivity extends Activity {
         startActivityForResult(intent, CODE_SELECT_PHOTO);
     }
 
-    private void init() {
-        mImgPhoto = findViewById(R.id.imageView);
-        mTxtResult = findViewById(R.id.tvResult);
-        try {
-            classifier = new ImageClassifierQuantizedMobileNet(this);
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to initialize an image classifier.", e);
-        }
-    }
-
-    private String classifyBitmapResult(Bitmap bitmap) {
-        String result = "";
-        if (bitmap != null) {
-            result = classifier.classifyFrame(bitmap);
-//            bitmap.recycle();
-        }
-        return result;
+    private void initViews() {
+        mTxtTabName.setText("识物");
     }
 
     private void capturePhoto() {
@@ -198,4 +217,5 @@ public class MainActivity extends Activity {
             selectPhoto();
         }
     }
+
 }
