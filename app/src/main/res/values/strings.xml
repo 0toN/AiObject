@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">识物</string>
+
+    <string name="scanning">识别中</string>
 </resources>

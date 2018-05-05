@@ -6,7 +6,6 @@ import android.content.ContentUris;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -16,18 +15,14 @@ import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
-import android.util.Log;
 import android.view.View;
-import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.deepblue.aiobject.R;
-import com.deepblue.aiobject.util.BitmapUtil;
 import com.deepblue.aiobject.util.ToastUtil;
 import com.deepblue.aiobject.util.TransparentStatusBarUtil;
 
 import java.io.File;
-import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -38,14 +33,9 @@ public class MainActivity extends Activity {
     private static final int CODE_SELECT_PHOTO = 2;
     private static final int CODE_PERMISSION_CAMERA = 3;
     private static final int CODE_PERMISSION_WRITE = 4;
-    @BindView(R.id.imageView)
-    ImageView mImgPhoto;
-    @BindView(R.id.tvResult)
-    TextView mTxtResult;
     @BindView(R.id.tv_tab_name)
     TextView mTxtTabName;
     private String imgPathName;
-    private ImageClassifier classifier;
 
     private long mExitTime;
 
@@ -58,12 +48,6 @@ public class MainActivity extends Activity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         initViews();
-    }
-
-    @Override
-    public void onDestroy() {
-        classifier.close();
-        super.onDestroy();
     }
 
     @Override
@@ -103,11 +87,10 @@ public class MainActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Bitmap bitmap = null;
         switch (requestCode) {
             case CODE_TAKE_PHOTO:
                 if (data == null && resultCode == RESULT_OK) {
-                    ;
+                    startRecognizeActivity();
                 }
                 break;
             case CODE_SELECT_PHOTO:
@@ -115,24 +98,19 @@ public class MainActivity extends Activity {
                     if (data != null) {
                         imgPathName = handleImage(data);
                     }
+                    startRecognizeActivity();
                 }
                 break;
             default:
                 super.onActivityResult(requestCode, resultCode, data);
                 break;
         }
-        try {
-            classifier = new ImageClassifierQuantizedMobileNet(this);
-        } catch (IOException e) {
-            Log.e(TAG, "Failed to initialize an image classifier.", e);
-        }
-        bitmap = BitmapUtil.getBitmapByPath(imgPathName, classifier.getImageSizeX(), classifier.getImageSizeY());
-        if (bitmap != null) {
-            mImgPhoto.setImageBitmap(bitmap);
-            String result = classifier.classifyFrame(bitmap);
-            mTxtResult.setText(result);
-            classifier.close();
-        }
+    }
+
+    private void startRecognizeActivity() {
+        Intent intent = new Intent(this, RecognizeActivity.class);
+        intent.putExtra("imgPathName", imgPathName);
+        startActivity(intent);
     }
 
     private void selectPhoto() {
