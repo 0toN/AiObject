@@ -1,73 +1,87 @@
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/colorPrimary"
     android:fitsSystemWindows="true"
-    android:orientation="vertical"
     tools:context=".activity.MainActivity">
 
-    <include layout="@layout/common_title_bar_layout" />
+    <include
+        android:id="@+id/titleBarLayout"
+        layout="@layout/common_title_bar_layout" />
 
-    <RelativeLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:background="@android:color/white">
-
-        <RelativeLayout
-            android:id="@+id/scanningLayout"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="#88888888"
-            android:visibility="gone">
-
-            <com.airbnb.lottie.LottieAnimationView
-                android:id="@+id/scanningAnimView"
-                android:layout_width="480dp"
-                android:layout_height="480dp"
-                android:layout_centerInParent="true"
-                app:lottie_autoPlay="true"
-                app:lottie_cacheStrategy="strong"
-                app:lottie_fileName="status_scanning.json"
-                app:lottie_loop="true" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_centerInParent="true"
-                android:text="@string/scanning"
-                android:textColor="#00fedd"
-                android:textSize="28sp" />
-        </RelativeLayout>
+        android:layout_below="@id/titleBarLayout"
+        android:background="@android:color/white"
+        android:orientation="vertical">
 
         <ImageView
             android:id="@+id/ivPhoto"
             android:layout_width="match_parent"
-            android:layout_height="300dp"
-            android:scaleType="fitXY" />
+            android:layout_height="0dp"
+            android:layout_weight="3"
+            android:scaleType="centerCrop" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tvResult"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:text="猫"
+                android:textColor="@android:color/darker_gray"
+                android:textSize="30sp" />
+
+            <TextView
+                android:id="@+id/tvConfidence"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tvResult"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="10dp"
+                android:text="置信度：93%"
+                android:textColor="#88888888"
+                android:textSize="15sp" />
+
+        </RelativeLayout>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/scanningLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/ivBlur"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop" />
+
+        <com.airbnb.lottie.LottieAnimationView
+            android:id="@+id/scanningAnimView"
+            android:layout_width="480dp"
+            android:layout_height="480dp"
+            android:layout_centerInParent="true"
+            app:lottie_autoPlay="true"
+            app:lottie_cacheStrategy="strong"
+            app:lottie_fileName="status_scanning.json"
+            app:lottie_loop="true" />
 
         <TextView
-            android:id="@+id/tvResult"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginTop="100dp"
-            android:text="猫"
-            android:textColor="@android:color/white"
-            android:textSize="30sp" />
-
-        <TextView
-            android:id="@+id/tvConfidence"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerHorizontal="true"
-            android:layout_marginLeft="10dp"
-            android:layout_marginTop="110dp"
-            android:layout_toRightOf="@id/tvResult"
-            android:text="置信度：93%"
-            android:textColor="#88888888"
-            android:textSize="15sp" />
+            android:layout_centerInParent="true"
+            android:text="@string/scanning"
+            android:textColor="#00fedd"
+            android:textSize="28sp" />
     </RelativeLayout>
 
-</LinearLayout>
+</RelativeLayout>

@@ -9,6 +9,10 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
@@ -50,12 +54,13 @@ public class RecognizeActivity extends Activity {
     TextView mTxtResult;
     @BindView(R.id.tvConfidence)
     TextView mTxtConfidence;
+    @BindView(R.id.ivBlur)
+    ImageView mImgBlur;
+
     private Bitmap mBitmap;
     private String imgPathName;
     private ImageClassifier classifier;
-
     private RecognizeResult recognizeResult;
-
     private boolean recognizeSuccess = false;
 
     private long time = 0;
@@ -122,7 +127,7 @@ public class RecognizeActivity extends Activity {
         }
         setContentView(R.layout.activity_recognize);
         ButterKnife.bind(this);
-        initViews();
+        init();
         startRecognize();
     }
 
@@ -132,12 +137,11 @@ public class RecognizeActivity extends Activity {
         super.onDestroy();
     }
 
-    private void initViews() {
+    private void init() {
         time = System.currentTimeMillis();
         Intent intent = getIntent();
         imgPathName = intent.getStringExtra("imgPathName");
         mTxtTabName.setText("识别结果");
-        mLayoutScanning.setVisibility(View.VISIBLE);
     }
 
     private void startRecognize() {
@@ -146,19 +150,23 @@ public class RecognizeActivity extends Activity {
         } catch (IOException e) {
             Log.e(TAG, "Failed to initialize an image classifier.", e);
         }
-        Bitmap bitmap = BitmapUtil.getBitmapByPath(imgPathName, classifier.getImageSizeX(), classifier.getImageSizeY());
+        Bitmap tfliteBitmap = BitmapUtil.getBitmapByPath(imgPathName, classifier.getImageSizeX(), classifier.getImageSizeY());
+        Bitmap blurBitmap = BitmapFactory.decodeFile(imgPathName);
         mBitmap = BitmapFactory.decodeFile(imgPathName);
         int degree = BitmapUtil.readPictureDegree(imgPathName);
         if (degree != 0) {
-            bitmap = BitmapUtil.rotaingImageView(degree, bitmap);
+            tfliteBitmap = BitmapUtil.rotaingImageView(degree, tfliteBitmap);
+            blurBitmap = BitmapUtil.rotaingImageView(degree, blurBitmap);
             mBitmap = BitmapUtil.rotaingImageView(degree, mBitmap);
         }
-        if (bitmap != null) {
+        if (mBitmap != null) {
             mImgPhoto.setImageBitmap(mBitmap);
+            blurBitmap = blur(blurBitmap, 25F);
+            mImgBlur.setImageBitmap(blurBitmap);
 
             int randomNum = (int) (Math.random() * 100);
             if (randomNum <= 35) {
-                String result = classifier.classifyFrame(bitmap);
+                String result = classifier.classifyFrame(tfliteBitmap);
 
                 Message msg = mHandler.obtainMessage();
                 msg.what = MSG_TFLITE_RECOGNIZE;
@@ -170,7 +178,7 @@ public class RecognizeActivity extends Activity {
                     mHandler.sendMessage(msg);
                 }
             } else {
-                reqFacePlusPlus(Base64Util.bitmapToBase64(bitmap));
+                reqFacePlusPlus(Base64Util.bitmapToBase64(tfliteBitmap));
             }
         }
     }
@@ -194,5 +202,27 @@ public class RecognizeActivity extends Activity {
                 }
             }
         });
+    }
+
+    private Bitmap blur(Bitmap bitmap, float radius) {
+        // 构建一个RenderScript对象
+        RenderScript rs = RenderScript.create(this);
+        // 创建高斯模糊脚本
+        ScriptIntrinsicBlur gaussianBlue = ScriptIntrinsicBlur.create(rs, Element.U8_4(rs));
+        // 创建用于输入的脚本类型
+        Allocation allIn = Allocation.createFromBitmap(rs, bitmap);
+        // 创建用于输出的脚本类型
+        Allocation allOut = Allocation.createFromBitmap(rs, bitmap);
+        // 设置模糊半径，范围0f<radius<=25f
+        gaussianBlue.setRadius(radius);
+        // 设置输入脚本类型
+        gaussianBlue.setInput(allIn);
+        // 执行高斯模糊算法，并将结果填入输出脚本类型中
+        gaussianBlue.forEach(allOut);
+        // 将输出内存编码为Bitmap，图片大小必须注意
+        allOut.copyTo(bitmap);
+        // 关闭RenderScript对象，API>=23则使用rs.releaseAllContexts()
+        rs.destroy();
+        return bitmap;
     }
 }
