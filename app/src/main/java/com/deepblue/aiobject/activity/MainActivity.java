@@ -16,6 +16,7 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.FileProvider;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.deepblue.aiobject.R;
@@ -26,6 +27,7 @@ import java.io.File;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class MainActivity extends Activity {
     private static final String TAG = "MainActivity";
@@ -35,6 +37,10 @@ public class MainActivity extends Activity {
     private static final int CODE_PERMISSION_WRITE = 4;
     @BindView(R.id.tv_tab_name)
     TextView mTxtTabName;
+    @BindView(R.id.btnCapturePhoto)
+    LinearLayout mBtnCapturePhoto;
+    @BindView(R.id.btnSelectPhoto)
+    LinearLayout mBtnSelectPhoto;
     private String imgPathName;
 
     private long mExitTime;
@@ -178,6 +184,20 @@ public class MainActivity extends Activity {
             cursor.close();
         }
         return Path;
+    }
+
+    @OnClick({R.id.btnCapturePhoto, R.id.btnSelectPhoto})
+    public void click(View v) {
+        switch (v.getId()) {
+            case R.id.btnCapturePhoto:
+                capturePhoto();
+                break;
+            case R.id.btnSelectPhoto:
+                selectPhoto();
+                break;
+            default:
+                break;
+        }
     }
 
     public void onCaptureClick(View view) {

@@ -25,21 +25,52 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <Button
+            <LinearLayout
                 android:id="@+id/btnCapturePhoto"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="onCaptureClick"
-                android:text="拍照"
-                android:textSize="16sp" />
+                android:background="@drawable/camera_button_bg_shape"
+                android:gravity="center"
+                android:orientation="horizontal">
 
-            <Button
+                <ImageView
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:src="@mipmap/ic_camera" />
+
+                <TextView
+                    android:id="@+id/tvCapturePhoto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="10dp"
+                    android:text="拍照识物"
+                    android:textColor="@color/white"
+                    android:textSize="18sp" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/btnSelectPhoto"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:onClick="onSelectPhotoClick"
-                android:text="从相册中选择"
-                android:textSize="16sp" />
+                android:layout_marginTop="15dp"
+                android:gravity="center_horizontal"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvSelectPhoto"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="从相册中选择"
+                    android:textColor="#888888"
+                    android:textSize="14sp" />
+
+                <ImageView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="-5dp"
+                    android:src="@mipmap/ic_next"
+                    android:tint="#888888" />
+            </LinearLayout>
 
         </LinearLayout>
 

@@ -37,6 +37,7 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class RecognizeActivity extends Activity {
     private static final String TAG = "RecognizeActivity";
@@ -44,6 +45,8 @@ public class RecognizeActivity extends Activity {
     private static final int MSG_FPP_RECOGNIZE = 1;
     private static final int MSG_TFLITE_RECOGNIZE = 2;
 
+    @BindView(R.id.iv_left)
+    ImageView mImgBack;
     @BindView(R.id.tv_tab_name)
     TextView mTxtTabName;
     @BindView(R.id.scanningLayout)
@@ -72,7 +75,7 @@ public class RecognizeActivity extends Activity {
             switch (msg.what) {
                 case MSG_FPP_RECOGNIZE:
                     recognizeResult = (RecognizeResult) msg.obj;
-                    if (recognizeResult != null) {
+                    if (recognizeResult != null && !recognizeResult.getObjects().isEmpty()) {
                         recognizeSuccess = true;
                         Log.d(TAG, "result = " + recognizeResult.toString());
 
@@ -80,7 +83,8 @@ public class RecognizeActivity extends Activity {
                         if (objects != null && !objects.isEmpty()) {
                             RecognizeResult.Object object = objects.get(0);
                             mTxtResult.setText(object.getValue());
-                            mTxtConfidence.setText(object.getConfidence() + "%");
+                            String confidence = (int) object.getConfidence() / 1 + "%";
+                            mTxtConfidence.setText(confidence);
                         }
                     } else {
                         recognizeSuccess = false;
@@ -92,14 +96,13 @@ public class RecognizeActivity extends Activity {
 
                     String[] thereResults = result.split(",");
                     if (thereResults != null && thereResults.length >= 1) {
-                        String[] firsrResult = thereResults[0].split(":");
-                        if (Float.valueOf(firsrResult[1]) < 0.2) {
+                        String[] firstResult = thereResults[0].split(":");
+                        if (Float.valueOf(firstResult[1]) < 0.2) {
                             recognizeSuccess = false;
-                            return;
                         } else {
                             recognizeSuccess = true;
-                            String confidence = Float.valueOf(firsrResult[1]) * 100 + "%";
-                            mTxtResult.setText(firsrResult[0]);
+                            String confidence = Integer.valueOf(firstResult[1]) * 100 + "%";
+                            mTxtResult.setText(firstResult[0]);
                             mTxtConfidence.setText(confidence);
                         }
                     } else {
@@ -142,6 +145,18 @@ public class RecognizeActivity extends Activity {
         Intent intent = getIntent();
         imgPathName = intent.getStringExtra("imgPathName");
         mTxtTabName.setText("识别结果");
+        mImgBack.setImageResource(R.mipmap.ic_back);
+    }
+
+    @OnClick({R.id.iv_left})
+    public void click(View v) {
+        switch (v.getId()) {
+            case R.id.iv_left:
+                finish();
+                break;
+            default:
+                break;
+        }
     }
 
     private void startRecognize() {
