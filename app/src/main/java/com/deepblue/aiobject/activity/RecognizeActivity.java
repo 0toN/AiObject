@@ -101,7 +101,7 @@ public class RecognizeActivity extends Activity {
                             recognizeSuccess = false;
                         } else {
                             recognizeSuccess = true;
-                            String confidence = Integer.valueOf(firstResult[1]) * 100 + "%";
+                            String confidence = Double.valueOf(firstResult[1]) * 100 + "%";
                             mTxtResult.setText(firstResult[0]);
                             mTxtConfidence.setText(confidence);
                         }
@@ -180,7 +180,7 @@ public class RecognizeActivity extends Activity {
             mImgBlur.setImageBitmap(blurBitmap);
 
             int randomNum = (int) (Math.random() * 100);
-            if (randomNum <= 35) {
+            if (randomNum <= 90) {
                 String result = classifier.classifyFrame(tfliteBitmap);
 
                 Message msg = mHandler.obtainMessage();
