@@ -9,7 +9,7 @@
         <item name="android:windowFullscreen">true</item>
         <!-- >使窗口透明化<-->
         <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowBackground">@mipmap/splash</item>
+        <item name="android:windowBackground">@color/white</item>
     </style>
 
 </resources>
