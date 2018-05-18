@@ -97,7 +97,7 @@ public class RecognizeActivity extends Activity {
                     String[] thereResults = result.split(",");
                     if (thereResults != null && thereResults.length >= 1) {
                         String[] firstResult = thereResults[0].split(":");
-                        if (Float.valueOf(firstResult[1]) < 0.2) {
+                        if (Float.valueOf(firstResult[1]) < 0.05) {
                             recognizeSuccess = false;
                         } else {
                             recognizeSuccess = true;
@@ -180,7 +180,7 @@ public class RecognizeActivity extends Activity {
             mImgBlur.setImageBitmap(blurBitmap);
 
             int randomNum = (int) (Math.random() * 100);
-            if (randomNum <= 90) {
+            if (randomNum <= 20) {
                 String result = classifier.classifyFrame(tfliteBitmap);
 
                 Message msg = mHandler.obtainMessage();
