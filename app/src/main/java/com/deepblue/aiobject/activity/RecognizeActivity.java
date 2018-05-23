@@ -141,7 +141,6 @@ public class RecognizeActivity extends Activity {
     }
 
     private void init() {
-        time = System.currentTimeMillis();
         Intent intent = getIntent();
         imgPathName = intent.getStringExtra("imgPathName");
         mTxtTabName.setText("识别结果");
@@ -160,6 +159,7 @@ public class RecognizeActivity extends Activity {
     }
 
     private void startRecognize() {
+        time = System.currentTimeMillis();
         try {
             classifier = new ImageClassifierQuantizedMobileNet(this);
         } catch (IOException e) {
@@ -178,20 +178,27 @@ public class RecognizeActivity extends Activity {
             mImgPhoto.setImageBitmap(mBitmap);
             blurBitmap = blur(blurBitmap, 25F);
             mImgBlur.setImageBitmap(blurBitmap);
-
             int randomNum = (int) (Math.random() * 100);
             if (randomNum <= 20) {
-                String result = classifier.classifyFrame(tfliteBitmap);
-
-                Message msg = mHandler.obtainMessage();
-                msg.what = MSG_TFLITE_RECOGNIZE;
-                msg.obj = result;
-                long gapTime = System.currentTimeMillis() - time;
-                if (gapTime < 2000) {
-                    mHandler.sendMessageDelayed(msg, 2000 - gapTime);
-                } else {
-                    mHandler.sendMessage(msg);
-                }
+                final Bitmap finalTfliteBitmap = tfliteBitmap;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        String result = "";
+                        for (int i = 0; i < 5; i++) {
+                            result = classifier.classifyFrame(finalTfliteBitmap);
+                        }
+                        Message msg = mHandler.obtainMessage();
+                        msg.what = MSG_TFLITE_RECOGNIZE;
+                        msg.obj = result;
+                        long gapTime = System.currentTimeMillis() - time;
+                        if (gapTime < 2000) {
+                            mHandler.sendMessageDelayed(msg, 2000 - gapTime);
+                        } else {
+                            mHandler.sendMessage(msg);
+                        }
+                    }
+                }).start();
             } else {
                 reqFacePlusPlus(Base64Util.bitmapToBase64(tfliteBitmap));
             }
