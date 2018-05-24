@@ -1,9 +1,12 @@
 package com.deepblue.aiobject.activity;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
@@ -122,6 +125,21 @@ public class RecognizeActivity extends Activity {
         }
     };
 
+    /**
+     * 判断网络情况
+     */
+    private boolean isNetworkAvalible() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager == null) {
+            return false;
+        }
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        if (activeNetworkInfo != null && activeNetworkInfo.isAvailable()) {
+            return true;
+        }
+        return false;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -178,31 +196,38 @@ public class RecognizeActivity extends Activity {
             mImgPhoto.setImageBitmap(mBitmap);
             blurBitmap = blur(blurBitmap, 25F);
             mImgBlur.setImageBitmap(blurBitmap);
-            int randomNum = (int) (Math.random() * 100);
-            if (randomNum <= 20) {
-                final Bitmap finalTfliteBitmap = tfliteBitmap;
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        String result = "";
-                        for (int i = 0; i < 5; i++) {
-                            result = classifier.classifyFrame(finalTfliteBitmap);
-                        }
-                        Message msg = mHandler.obtainMessage();
-                        msg.what = MSG_TFLITE_RECOGNIZE;
-                        msg.obj = result;
-                        long gapTime = System.currentTimeMillis() - time;
-                        if (gapTime < 2000) {
-                            mHandler.sendMessageDelayed(msg, 2000 - gapTime);
-                        } else {
-                            mHandler.sendMessage(msg);
-                        }
-                    }
-                }).start();
+            if (isNetworkAvalible()) {
+                int randomNum = (int) (Math.random() * 100);
+                if (randomNum <= 20) {
+                    useTflite(tfliteBitmap);
+                } else {
+                    reqFacePlusPlus(Base64Util.bitmapToBase64(tfliteBitmap));
+                }
             } else {
-                reqFacePlusPlus(Base64Util.bitmapToBase64(tfliteBitmap));
+                useTflite(tfliteBitmap);
             }
         }
+    }
+
+    private void useTflite(final Bitmap tfliteBitmap) {
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                String result = "";
+                for (int i = 0; i < 5; i++) {
+                    result = classifier.classifyFrame(tfliteBitmap);
+                }
+                Message msg = mHandler.obtainMessage();
+                msg.what = MSG_TFLITE_RECOGNIZE;
+                msg.obj = result;
+                long gapTime = System.currentTimeMillis() - time;
+                if (gapTime < 2000) {
+                    mHandler.sendMessageDelayed(msg, 2000 - gapTime);
+                } else {
+                    mHandler.sendMessage(msg);
+                }
+            }
+        }).start();
     }
 
     private void reqFacePlusPlus(String imgBase64) {
